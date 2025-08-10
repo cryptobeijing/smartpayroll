@@ -39,6 +39,12 @@ interface PayrollData {
   employees_data: Employee[];
 }
 
+interface BalanceData {
+  balance: string;
+  success: boolean;
+  error?: string;
+}
+
 export default function PayrollDashboard() {
   const [payrollData, setPayrollData] = useState<PayrollData | null>(null);
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
@@ -47,9 +53,12 @@ export default function PayrollDashboard() {
   const [loading, setLoading] = useState(true);
   const [editingSalary, setEditingSalary] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState<string>('');
+  const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   useEffect(() => {
     fetchPayrollData();
+    fetchBalance();
   }, []);
 
   const fetchPayrollData = async () => {
@@ -64,6 +73,20 @@ export default function PayrollDashboard() {
       console.error('Failed to fetch payroll data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBalance = async () => {
+    setBalanceLoading(true);
+    try {
+      const response = await fetch('/api/payroll/balance');
+      const data = await response.json();
+      setBalanceData(data);
+    } catch (error) {
+      console.error('Failed to fetch balance:', error);
+      setBalanceData({ balance: '0', success: false, error: 'Failed to fetch balance' });
+    } finally {
+      setBalanceLoading(false);
     }
   };
 
@@ -87,6 +110,8 @@ export default function PayrollDashboard() {
       
       if (result.success) {
         setPaymentResults(result.results);
+        // Refresh balance after successful payments
+        await fetchBalance();
       } else {
         console.error('Payroll processing failed:', result.error);
       }
@@ -243,20 +268,56 @@ export default function PayrollDashboard() {
 
         {/* Payroll Account */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Payroll Account</h3>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Wallet className="h-5 w-5 text-gray-400 mr-2" />
-              <span className="font-mono text-sm text-gray-600">{payrollData.payrollAccount}</span>
+          <div className="mb-6">
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">Payroll Account</h3>
+                <div className="flex-1 flex justify-center">
+                  <div className="flex items-center space-x-3 ml-[220px]">
+                    <h3 className="text-lg font-medium text-gray-900">Balance</h3>
+                    <button
+                      onClick={fetchBalance}
+                      disabled={balanceLoading}
+                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                      title="Refresh balance"
+                    >
+                      <Loader className={`h-4 w-4 ${balanceLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+                <div className="w-32"></div>
+              </div>
             </div>
-            <a 
-              href={`https://sepolia.basescan.org/address/${payrollData.payrollAccount}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center text-blue-600 hover:text-blue-800"
-            >
-              View on BaseScan <ExternalLink className="h-4 w-4 ml-1" />
-            </a>
+            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center">
+                <Wallet className="h-5 w-5 text-gray-400 mr-3" />
+                <span className="font-mono text-sm text-gray-600">{payrollData.payrollAccount}</span>
+              </div>
+              <div className="flex-1 flex justify-center">
+                <span className="font-mono text-sm text-gray-600">
+                  {balanceLoading ? (
+                    <span className="flex items-center">
+                      <Loader className="animate-spin h-4 w-4 text-gray-400 mr-2" />
+                      Loading...
+                    </span>
+                  ) : balanceData?.success ? (
+                    `${parseFloat(balanceData.balance).toFixed(3)} USDC`
+                  ) : (
+                    <span className="text-red-600">Failed to load balance</span>
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <a 
+                  href={`https://sepolia.basescan.org/address/${payrollData.payrollAccount}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  View on BaseScan <ExternalLink className="h-4 w-4 ml-1" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
