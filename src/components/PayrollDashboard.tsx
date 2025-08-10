@@ -55,6 +55,7 @@ export default function PayrollDashboard() {
   const [editingValue, setEditingValue] = useState<string>('');
   const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const [lastBalanceUpdate, setLastBalanceUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchPayrollData();
@@ -79,9 +80,18 @@ export default function PayrollDashboard() {
   const fetchBalance = async () => {
     setBalanceLoading(true);
     try {
-      const response = await fetch('/api/payroll/balance');
+      // Add timestamp to force fresh data fetch and bypass any caching
+      const timestamp = Date.now();
+      const response = await fetch(`/api/payroll/balance?t=${timestamp}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      });
       const data = await response.json();
       setBalanceData(data);
+      setLastBalanceUpdate(new Date());
     } catch (error) {
       console.error('Failed to fetch balance:', error);
       setBalanceData({ balance: '0', success: false, error: 'Failed to fetch balance' });
@@ -110,7 +120,7 @@ export default function PayrollDashboard() {
       
       if (result.success) {
         setPaymentResults(result.results);
-        // Refresh balance after successful payments
+        // Refresh balance after successful payments to show updated balance
         await fetchBalance();
       } else {
         console.error('Payroll processing failed:', result.error);
@@ -283,6 +293,11 @@ export default function PayrollDashboard() {
                     >
                       <Loader className={`h-4 w-4 ${balanceLoading ? 'animate-spin' : ''}`} />
                     </button>
+                    {lastBalanceUpdate && (
+                      <span className="text-xs text-gray-500">
+                        Last updated: {lastBalanceUpdate.toLocaleTimeString()}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="w-32"></div>
@@ -298,7 +313,7 @@ export default function PayrollDashboard() {
                   {balanceLoading ? (
                     <span className="flex items-center">
                       <Loader className="animate-spin h-4 w-4 text-gray-400 mr-2" />
-                      Loading...
+                      Refreshing...
                     </span>
                   ) : balanceData?.success ? (
                     `${parseFloat(balanceData.balance).toFixed(3)} USDC`
