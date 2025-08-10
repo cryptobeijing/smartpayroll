@@ -4,7 +4,7 @@ A Next.js application for automated USDC payroll payments using the Coinbase CDP
 
 ## Background
 
-Smart Payroll is designed to help Web3 startups streamline their monthly payroll operations through blockchain technology. By leveraging Coinbase's Developer Platform (CDP), the application automates USDC payments to employees, providing transparent, auditable payroll records on the blockchain.
+Smart Payroll is designed to help Web3 startups streamline their monthly payroll operations through blockchain technology. By leveraging Coinbase's Developer Platform (CDP), the application automates USDC payments to employees.
 
 The project demonstrates how modern Web3 startups can integrate decentralized payroll systems into their operations, offering benefits such as:
 - **Reduced Manual Work**: Eliminate manual payroll processing and calculations
