@@ -2,21 +2,31 @@
 
 A Next.js application for automated USDC payroll payments using the Coinbase CDP SDK on Base Sepolia testnet.
 
+## Background
+
+Smart Payroll is designed to help Web3 startups streamline their monthly payroll operations through blockchain technology. By leveraging Coinbase's Developer Platform (CDP), the application automates USDC payments to employees, providing transparent, auditable payroll records on the blockchain.
+
+The project demonstrates how modern Web3 startups can integrate decentralized payroll systems into their operations, offering benefits such as:
+- **Reduced Manual Work**: Eliminate manual payroll processing and calculations
+- **Lower Fraud Risk**: Transparent on-chain transactions with immutable records
+- **Transparency**: All transactions recorded on-chain with BaseScan verification
+- **Global Access**: Support for international employees with consistent payment processing
+
 ## Features
 
 - 📊 **Dashboard** - View all employees and payroll statistics
 - 💰 **USDC Payments** - Automated payments using CDP SDK
-- 👥 **Employee Management** - 23 employees with random salaries (0.01-0.05 USDC)
 - 🔄 **Batch Processing** - Pay all employees or selected employees
 - 📈 **Real-time Status** - Track payment progress and transaction hashes
 - 🔗 **Blockchain Explorer** - Direct links to BaseScan for transactions
 
 ## Tech Stack
 
+- **[Coinbase CDP Smart Wallet](https://docs.cdp.coinbase.com/wallet-api/v2/introduction/welcome)** - Secure key management and transaction signing
+- **[Coinbase CDP API](https://docs.cdp.coinbase.com/api-reference/v2/introduction)** - Blockchain interactions and account management
 - **Next.js 14** - React framework
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
-- **Coinbase CDP SDK** - Blockchain interactions
 - **Viem** - Ethereum client utilities
 - **Lucide React** - Icons
 
