@@ -1,11 +1,4 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import dotenv from 'dotenv';
-
-// Load environment variables from .env file
-dotenv.config();
-
-const execAsync = promisify(exec);
+import { CdpClient } from '@coinbase/cdp-sdk';
 
 interface TokenAmount {
   amount: string;
@@ -24,10 +17,6 @@ interface TokenBalance {
   token: Token;
 }
 
-interface CDPResponse {
-  balances: TokenBalance[];
-}
-
 async function getUSDCBalance(): Promise<string> {
   const apiKeyId = process.env.CDP_API_KEY_ID;
   const apiKeySecret = process.env.CDP_API_KEY_SECRET;
@@ -37,30 +26,18 @@ async function getUSDCBalance(): Promise<string> {
     throw new Error('CDP API credentials not found in environment variables');
   }
   
-  const url = `https://api.cdp.coinbase.com/platform/v2/data/evm/token-balances/base-sepolia/${address}?pageSize=100`;
-  
   try {
-    // Use cdpcurl command directly since it handles Ed25519 authentication
-    const command = `cdpcurl -X GET -i ${apiKeyId} -s ${apiKeySecret} "${url}"`;
+    // Use CDP SDK instead of cdpcurl command
+    const cdp = new CdpClient();
     
-    const { stdout, stderr } = await execAsync(command);
-    
-    if (stderr) {
-      console.warn('cdpcurl stderr:', stderr);
-    }
-    
-    // Parse the response
-    const lines = stdout.trim().split('\n');
-    const jsonLine = lines.find(line => line.startsWith('{'));
-    
-    if (!jsonLine) {
-      throw new Error('No JSON response found');
-    }
-    
-    const data: CDPResponse = JSON.parse(jsonLine);
+    // Get token balances using the CDP SDK
+    const balances = await cdp.evm.listTokenBalances({
+      address: address as `0x${string}`,
+      network: 'base-sepolia',
+    });
     
     // Find USDC balance
-    const usdcBalance = data.balances.find(balance => 
+    const usdcBalance = balances.balances.find(balance => 
       balance.token.symbol === 'USDC'
     );
 
